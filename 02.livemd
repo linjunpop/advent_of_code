@@ -1,5 +1,11 @@
 # Day 2
 
+## Preparation
+
+```elixir
+Mix.install([:kino])
+```
+
 ## Part 1
 
 ```elixir
@@ -40,10 +46,7 @@ horizontal_pos * depth
 ## Part 2
 
 ```elixir
-# horizontal_pos, depth, aim
-start_pos = {0, 0, 0}
-
-commands = """
+example_commands = """
 forward 5
 down 5
 forward 8
@@ -52,8 +55,18 @@ down 8
 forward 2
 """
 
+commands = Kino.Input.textarea("Please input your file:", default: example_commands)
+```
+
+<!-- livebook:{"reevaluate_automatically":true} -->
+
+```elixir
+# horizontal_pos, depth, aim
+start_pos = {0, 0, 0}
+
 current_pos =
   commands
+  |> Kino.Input.read()
   |> String.split("\n", trim: true)
   |> Enum.map(fn line ->
     [direction, step] = String.split(line, " ")

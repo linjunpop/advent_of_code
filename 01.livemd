@@ -1,9 +1,15 @@
 # Day 1
 
-## Example
+## Preparation
 
 ```elixir
-input = """
+Mix.install([:kino])
+```
+
+## Part 1
+
+```elixir
+example_input = """
 199
 200
 208
@@ -16,7 +22,14 @@ input = """
 263
 """
 
+input = Kino.Input.textarea("Please input your file:", default: example_input)
+```
+
+<!-- livebook:{"reevaluate_automatically":true} -->
+
+```elixir
 input
+|> Kino.Input.read()
 |> String.split("\n", trim: true)
 |> Enum.map(&String.to_integer/1)
 |> Enum.chunk_every(2, 1, :discard)
