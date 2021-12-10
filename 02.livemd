@@ -1,0 +1,38 @@
+# Day 2
+
+## Example
+
+```elixir
+commands = """
+forward 5
+down 5
+forward 8
+up 3
+down 8
+forward 2
+"""
+
+current_pos =
+  commands
+  |> String.split("\n", trim: true)
+  |> Enum.map(fn line ->
+    [direction, step] = String.split(line, " ")
+    {direction, String.to_integer(step)}
+  end)
+  |> Enum.reduce({0, 0}, fn command, {horizontal_pos, depth} ->
+    case command do
+      {"forward", step} ->
+        {horizontal_pos + step, depth}
+
+      {"down", step} ->
+        {horizontal_pos, depth + step}
+
+      {"up", step} ->
+        {horizontal_pos, depth - step}
+    end
+  end)
+
+{horizontal_pos, depth} = current_pos
+
+horizontal_pos * depth
+```
