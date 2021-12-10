@@ -1,0 +1,82 @@
+# 03
+
+## Preparation
+
+```elixir
+Mix.install([:kino])
+```
+
+## Part 1
+
+```elixir
+example_diagnostic_report = """
+00100
+11110
+10110
+10111
+10101
+01111
+00111
+11100
+10000
+11001
+00010
+01010
+"""
+
+diagnostic_report =
+  Kino.Input.textarea("Please input your file:", default: example_diagnostic_report)
+```
+
+<!-- livebook:{"reevaluate_automatically":true} -->
+
+```elixir
+data =
+  diagnostic_report
+  |> Kino.Input.read()
+  |> String.split("\n", trim: true)
+  |> Enum.map(&String.split(&1, ""))
+  |> Enum.map(&Enum.slice(&1, 1..-2))
+  |> Enum.map(fn row ->
+    row
+    |> Enum.map(&String.to_integer/1)
+  end)
+```
+
+<!-- livebook:{"reevaluate_automatically":true} -->
+
+```elixir
+list_with_frequencies =
+  data
+  |> Enum.zip()
+  |> Enum.map(&Tuple.to_list/1)
+  |> Enum.map(&Enum.frequencies/1)
+  |> Enum.map(&Map.to_list/1)
+```
+
+<!-- livebook:{"reevaluate_automatically":true} -->
+
+```elixir
+[gamma_rate, epsilon_rate] =
+  list_with_frequencies
+  |> Enum.map(fn [{first_num, first_occur}, {second_num, second_occur}] ->
+    if first_occur > second_occur do
+      [first_num, second_num]
+    else
+      [second_num, first_num]
+    end
+  end)
+  |> Enum.zip()
+  |> Enum.map(fn digits ->
+    digits
+    |> Tuple.to_list()
+    |> Enum.join()
+    |> String.to_integer(2)
+  end)
+```
+
+<!-- livebook:{"reevaluate_automatically":true} -->
+
+```elixir
+gamma_rate * epsilon_rate
+```
