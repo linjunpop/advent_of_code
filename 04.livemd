@@ -1,0 +1,162 @@
+# 04
+
+## Preparation
+
+```elixir
+Mix.install([:kino])
+```
+
+## Part 1
+
+```elixir
+example_input = """
+7,4,9,5,11,17,23,2,0,14,21,24,10,16,13,6,15,25,12,22,18,20,8,19,3,26,1
+
+22 13 17 11  0
+ 8  2 23  4 24
+21  9 14 16  7
+ 6 10  3 18  5
+ 1 12 20 15 19
+
+ 3 15  0  2 22
+ 9 18 13 17  5
+19  8  7 25 23
+20 11 10 24  4
+14 21 16 12  6
+
+14 21 17 24  4
+10 16 15  9 19
+18  8 23 26 20
+22 11 13  6  5
+ 2  0 12  3  7
+"""
+
+input = Kino.Input.textarea("Please input your draw numbers and boards:", default: example_input)
+```
+
+<!-- livebook:{"reevaluate_automatically":true} -->
+
+```elixir
+[draw_numbers_input | boards_input] =
+  input
+  |> Kino.Input.read()
+  |> String.split("\n", trim: true)
+```
+
+<!-- livebook:{"reevaluate_automatically":true} -->
+
+```elixir
+draw_numbers =
+  draw_numbers_input
+  |> String.split(",")
+  |> Enum.map(&String.to_integer/1)
+```
+
+<!-- livebook:{"reevaluate_automatically":true} -->
+
+```elixir
+boards_with_markers =
+  boards_input
+  |> Enum.chunk_every(5)
+  |> Enum.map(fn board ->
+    Enum.map(board, fn row ->
+      row
+      |> String.split(~r/\s+/, trim: true)
+      |> Enum.map(fn number ->
+        # {number, marked?}
+        {number |> String.to_integer(), false}
+      end)
+    end)
+  end)
+```
+
+<!-- livebook:{"reevaluate_automatically":true} -->
+
+```elixir
+defmodule Game do
+  def mark_board(board, num) do
+    board
+    |> Enum.map(fn row ->
+      row
+      |> Enum.map(fn
+        {^num, _marked?} ->
+          {num, true}
+
+        other ->
+          other
+      end)
+    end)
+  end
+
+  def board_win?(board) do
+    row_win?(board) || column_win?(board)
+  end
+
+  def column_win?(board) do
+    # col indexes
+    0..4
+    |> Enum.any?(fn col ->
+      # row indexes
+      0..4
+      |> Enum.all?(fn row ->
+        {_num, mark} =
+          board
+          |> Enum.at(row)
+          |> Enum.at(col)
+
+        mark
+      end)
+    end)
+  end
+
+  def row_win?(board) do
+    board
+    |> Enum.any?(fn row ->
+      row
+      |> Enum.all?(fn
+        {_number, true} -> true
+        _other -> false
+      end)
+    end)
+  end
+
+  def sum_of_all_unmarked_numbers(board) do
+    board
+    |> List.flatten()
+    |> Enum.reduce(0, fn
+      {num, false}, acc ->
+        acc + num
+
+      {_num, true}, acc ->
+        acc
+    end)
+  end
+end
+```
+
+<!-- livebook:{"reevaluate_automatically":true} -->
+
+```elixir
+%{win_board: win_board, number: number, boards: _boards} =
+  draw_numbers
+  |> Enum.reduce_while(
+    %{win_board: nil, mark_number: nil, boards: boards_with_markers},
+    fn num, %{boards: current_boards} ->
+      updated_boards =
+        current_boards
+        |> Enum.map(&Game.mark_board(&1, num))
+
+      case Enum.find(updated_boards, &Game.board_win?/1) do
+        nil ->
+          {:cont, %{win_board: nil, number: nil, boards: updated_boards}}
+
+        win_board ->
+          {:halt, %{win_board: win_board, number: num, boards: updated_boards}}
+      end
+    end
+  )
+
+IO.inspect(win_board)
+
+number * Game.sum_of_all_unmarked_numbers(win_board)
+```
